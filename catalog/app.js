@@ -57,6 +57,7 @@ app.get("/update/:item_number", async (req, res) => {
   try {
     const itemToUpdate = req.params.item_number;
     const items = [];
+    var stock;
     await fs
       .createReadStream("./catalog.csv")
       .pipe(csv())
@@ -68,7 +69,12 @@ app.get("/update/:item_number", async (req, res) => {
         console.log(items);
         items.forEach((row) => {
           if (row.item_number === itemToUpdate) {
-            row.items_in_stock = parseInt(row.items_in_stock, 10) - 1;
+            stock = parseInt(row.items_in_stock, 10)
+            if (stock == 0) {
+              res.json({ message: "No stock. Sold out." });
+            } else {
+              row.items_in_stock = stock - 1;
+            }
           }
         });
 
