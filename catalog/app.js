@@ -1,13 +1,14 @@
 const express = require("express");
 const fs = require("fs");
-const fastcsv = require("fast-csv")
 const csv = require("csv-parser");
+const fastcsv = require("fast-csv");
+
 const app = express();
 const port = 3000;
 
-app.get("/subject/:subject", async (req, res) => {
+app.get("/subject/:topic", async (req, res) => {
   try {
-    const topicToSearch = req.params.subject;
+    const topicToSearch = req.params.topic;
     const results = [];
     fs.createReadStream("./catalog.csv")
       .pipe(csv())
@@ -29,32 +30,9 @@ app.get("/subject/:subject", async (req, res) => {
   }
 });
 
-app.get("/:title", async (req, res) => {
+app.get("/query/:itemNumber", async (req, res) => {
   try {
-    const itemToSearch = req.params.title;
-    const results = [];
-    fs.createReadStream("./catalog.csv")
-      .pipe(csv())
-      .on("data", (row) => {
-        if (row.title === itemToSearch) {
-          results.push(row);
-        }
-      })
-      .on("end", () => {
-        if (results.length > 0) {
-          res.json(results);
-        } else {
-          res.json("No results found.");
-        }
-      });
-  } catch (error) {
-    res.status(500).send("Error reading the file");
-  }
-});
-
-app.get("query/:item_number", async (req, res) => {
-  try {
-    const itemToSearch = req.params.item_number;
+    const itemToSearch = req.params.itemNumber;
     const results = [];
     fs.createReadStream("./catalog.csv")
       .pipe(csv())
@@ -109,7 +87,6 @@ app.get("/update/:item_number", async (req, res) => {
   }
 });
 
-
 app.listen(port, () => {
-  console.log(`Express server is running on port ${port}`);
+  console.log(`Express server is running on port ${port}`);
 });
