@@ -59,6 +59,7 @@ app.get("/update/:item_number", async (req, res) => {
     const itemToUpdate = req.params.item_number;
     const items = [];
     var stock;
+    let book_name = "";
     await fs
       .createReadStream("./catalog.csv")
       .pipe(csv())
@@ -67,26 +68,29 @@ app.get("/update/:item_number", async (req, res) => {
         items.push(row);
       })
       .on("end", () => {
-        let responseMessage = "";
+        let responseMessage = { message: "", book_name: "" };
         items.forEach((row) => {
           if (row.item_number === itemToUpdate) {
+            book_name = row.title;
             stock = parseInt(row.items_in_stock, 10);
             if (stock == 0) {
-              responseMessage = "No stock. Sold out.";
+              responseMessage.message = "No stock. Sold out.";
               res.json(responseMessage);
             } else {
               row.items_in_stock = stock - 1;
             }
           }
         });
-        if (responseMessage !== "No stock. Sold out.") {
+        if (responseMessage.message !== "No stock. Sold out.") {
           const writeStream = fs.createWriteStream("output.csv");
 
           fastcsv
             .writeToStream(writeStream, items, { headers: true })
             .on("finish", () => {
               console.log("Data has been updated and written to output.csv");
-              responseMessage = "Stock updated successfully";
+              responseMessage.message = "Stock updated successfully";
+              responseMessage.book_name = book_name;
+
               res.json(responseMessage);
               fs.renameSync("output.csv", "./catalog.csv");
             });
