@@ -69,7 +69,7 @@ app.get("/update/:item_number", async (req, res) => {
         console.log(items);
         items.forEach((row) => {
           if (row.item_number === itemToUpdate) {
-            stock = parseInt(row.items_in_stock, 10)
+            stock = parseInt(row.items_in_stock, 10);
             if (stock == 0) {
               res.json({ message: "No stock. Sold out." });
             } else {
@@ -84,6 +84,7 @@ app.get("/update/:item_number", async (req, res) => {
           .writeToStream(writeStream, items, { headers: true })
           .on("finish", () => {
             console.log("Data has been updated and written to output.csv");
+            res.json({ message: "Stock updated successfully" });
           });
 
         fs.renameSync("output.csv", "./catalog.csv");

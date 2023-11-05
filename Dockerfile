@@ -8,7 +8,3 @@ WORKDIR /home/
 RUN apt-get update -y 
 RUN apt-get install nodejs npm -y
 RUN apt-get install nano -y 
-<<<<<<< HEAD
-=======
-
->>>>>>> 1076749936897ee6b1a3fff3afd9e64d778900f0
