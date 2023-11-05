@@ -2,6 +2,7 @@ const express = require("express");
 const fs = require("fs");
 const csv = require("csv-parser");
 const fastcsv = require("fast-csv");
+const { resolve } = require("path");
 
 const app = express();
 const port = 3000;
@@ -21,7 +22,7 @@ app.get("/subject/:topic", async (req, res) => {
         if (results.length > 0) {
           res.json(results);
         } else {
-          res.json({ message: "No results found." });
+          res.json("No results found.");
         }
       });
   } catch (error) {
@@ -66,28 +67,30 @@ app.get("/update/:item_number", async (req, res) => {
         items.push(row);
       })
       .on("end", () => {
-        console.log(items);
+        let responseMessage = "";
         items.forEach((row) => {
           if (row.item_number === itemToUpdate) {
             stock = parseInt(row.items_in_stock, 10);
             if (stock == 0) {
-              res.json({ message: "No stock. Sold out." });
+              responseMessage = "No stock. Sold out.";
+              res.json(responseMessage);
             } else {
               row.items_in_stock = stock - 1;
             }
           }
         });
+        if (responseMessage !== "No stock. Sold out.") {
+          const writeStream = fs.createWriteStream("output.csv");
 
-        const writeStream = fs.createWriteStream("output.csv");
-
-        fastcsv
-          .writeToStream(writeStream, items, { headers: true })
-          .on("finish", () => {
-            console.log("Data has been updated and written to output.csv");
-            res.json({ message: "Stock updated successfully" });
-          });
-
-        fs.renameSync("output.csv", "./catalog.csv");
+          fastcsv
+            .writeToStream(writeStream, items, { headers: true })
+            .on("finish", () => {
+              console.log("Data has been updated and written to output.csv");
+              responseMessage = "Stock updated successfully";
+              res.json(responseMessage);
+              fs.renameSync("output.csv", "./catalog.csv");
+            });
+        }
       });
   } catch (error) {
     res.status(500).send("Error reading the file");

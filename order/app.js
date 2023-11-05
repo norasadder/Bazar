@@ -28,18 +28,15 @@ app.get("/purchase/:item_number", async (req, res) => {
 
         if (updateResponse.status === 200) {
           // Successfully updated stock in the catalog server
-          console.log(updateResponse.data.message);
-          if (updateResponse.data.message === "No stock. Sold out.") {
+          console.log(updateResponse.data);
+          if (updateResponse.data === "No stock. Sold out.") {
             // If the catalog server responds with "No stock. Sold out.", handle the out-of-stock case
-            res.status(400).json({ error: "Item is out of stock" });
-          } else if (
-            updateResponse.data.message === "Stock updated successfully"
-          ) {
+            res.json("Item is out of stock");
+          } else if (updateResponse.data === "Stock updated successfully") {
             // The catalog server has successfully updated the stock, proceed with the purchase logic
             // Respond with a success message
-
             await addOrder(itemToPurchase);
-            res.json({ message: "Item purchased successfully" });
+            res.json("Item purchased successfully");
           } else {
             // Handle other responses if needed
             res
