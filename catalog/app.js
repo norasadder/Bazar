@@ -7,7 +7,7 @@ const { resolve } = require("path");
 const app = express();
 const port = 3000;
 
-app.get("/subject/:topic", async (req, res) => {
+app.get("/query/subject/:topic", async (req, res) => {
   try {
     const topicToSearch = req.params.topic;
     const results = [];
@@ -31,7 +31,7 @@ app.get("/subject/:topic", async (req, res) => {
   }
 });
 
-app.get("/query/:itemNumber", async (req, res) => {
+app.get("/query/itemNumber/:itemNumber", async (req, res) => {
   try {
     const itemToSearch = req.params.itemNumber;
     const results = [];

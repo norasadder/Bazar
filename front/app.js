@@ -27,7 +27,7 @@ app.get("/info/:item_number", async (req, res) => {
     const itemToQuery = req.params.item_number;
     const catalogServerUrl = "http://catalog:3000";
     const queryResponse = await axios.get(
-      `${catalogServerUrl}/query/${itemToQuery}`
+      `${catalogServerUrl}/query/itemNumber/${itemToQuery}`
     );
     if (queryResponse.status === 200) {
       res.json(queryResponse.data);
@@ -48,7 +48,7 @@ app.get("/search/:topic", async (req, res) => {
     const topicToSearch = req.params.topic;
     const catalogServerUrl = "http://catalog:3000";
     const queryResponse = await axios.get(
-      `${catalogServerUrl}/subject/${topicToSearch}`
+      `${catalogServerUrl}/query/subject/${topicToSearch}`
     );
     if (queryResponse.status === 200) {
       res.json(queryResponse.data);

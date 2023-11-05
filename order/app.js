@@ -15,7 +15,7 @@ app.get("/purchase/:item_number", async (req, res) => {
 
     // Use Axios to make a GET request to check item availability
     const queryResponse = await axios.get(
-      `${catalogServerUrl}/query/${itemToPurchase}`
+      `${catalogServerUrl}/query/itemNumber/${itemToPurchase}`
     );
 
     if (queryResponse.status === 200) {
