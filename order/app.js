@@ -54,4 +54,6 @@ app.get('/purchase/:item_number', async (req, res) => {
     }
   });
   
-
+  app.listen(port, () => {
+    console.log(`Express server is running on port ${port}`);
+  });
