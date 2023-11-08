@@ -57,11 +57,12 @@ app.get("/query/itemNumber/:itemNumber", async (req, res) => {
 });
 
 // decrement the stock given the item number
-app.get("/update/:item_number", async (req, res) => {
+app.get("/update/decrement/:item_number", async (req, res) => {
   try {
     const itemToUpdate = req.params.item_number;
     const items = [];
     var stock;
+    let found = false;
     let book_name = "";
     await fs
       .createReadStream("./catalog.csv")
@@ -75,7 +76,9 @@ app.get("/update/:item_number", async (req, res) => {
           if (row.item_number === itemToUpdate) {
             book_name = row.title;
             stock = parseInt(row.items_in_stock, 10);
-            if (stock == 0) {
+            found = true;
+            responseMessage.book_name = book_name;
+            if (stock === 0) {
               responseMessage.message = "No stock. Sold out.";
               res.json(responseMessage);
             } else {
@@ -83,7 +86,10 @@ app.get("/update/:item_number", async (req, res) => {
             }
           }
         });
-        if (responseMessage.message !== "No stock. Sold out.") {
+        if (
+          responseMessage.message !== "No stock. Sold out." &&
+          found === true
+        ) {
           const writeStream = fs.createWriteStream("output.csv");
 
           fastcsv
@@ -91,11 +97,20 @@ app.get("/update/:item_number", async (req, res) => {
             .on("finish", () => {
               console.log("Data has been updated and written to output.csv");
               responseMessage.message = "Stock updated successfully";
-              responseMessage.book_name = book_name;
 
+              // res.json(
+              //   `The quantity of (${book_name}) book has been decremented successfully, old quantity: ${stock} , new quantity: ${
+              //     stock - 1
+              //   }`
+              // );
               res.json(responseMessage);
               fs.renameSync("output.csv", "./catalog.csv");
             });
+        } else if (
+          responseMessage.message !== "This Item is out of stock" &&
+          found === false
+        ) {
+          res.send({ message: "Item not found in the catalog" });
         }
       });
   } catch (error) {
@@ -104,10 +119,12 @@ app.get("/update/:item_number", async (req, res) => {
 });
 
 // increment the stck given the item number
-app.get("/update/increment/:item_number", async (req, res) => {
+app.get("/update/increment/:item_number/:quantity", async (req, res) => {
   try {
     const itemToUpdate = req.params.item_number;
+    const quantity = req.params.quantity;
     const items = [];
+    let found = false;
     var stock;
     let book_name = "";
     await fs
@@ -122,20 +139,29 @@ app.get("/update/increment/:item_number", async (req, res) => {
           if (row.item_number === itemToUpdate) {
             book_name = row.title;
             stock = parseInt(row.items_in_stock, 10);
-            row.items_in_stock = stock + 1;
+            row.items_in_stock = stock + parseInt(quantity, 10);
+            found = true;
           }
         });
-        const writeStream = fs.createWriteStream("output.csv");
-        fastcsv
-          .writeToStream(writeStream, items, { headers: true })
-          .on("finish", () => {
-            console.log("Data has been updated and written to output.csv");
-            responseMessage.message = "Stock updated successfully";
-            responseMessage.book_name = book_name;
+        if (found === true) {
+          const writeStream = fs.createWriteStream("output.csv");
+          fastcsv
+            .writeToStream(writeStream, items, { headers: true })
+            .on("finish", () => {
+              console.log("Data has been updated and written to output.csv");
+              responseMessage.message = "Stock updated successfully";
+              responseMessage.book_name = book_name;
 
-            res.json(responseMessage);
-            fs.renameSync("output.csv", "./catalog.csv");
-          });
+              res.json(
+                `The quantity of (${book_name}) book has been incremented successfully, old quantity: ${stock} , new quantity: ${
+                  stock + parseInt(quantity, 10)
+                }`
+              );
+              fs.renameSync("output.csv", "./catalog.csv");
+            });
+        } else {
+          res.send("Item not found in the catalog");
+        }
       });
   } catch (error) {
     res.status(500).send("Error reading the file");
@@ -148,8 +174,9 @@ app.get("/update/cost/:item_number/:cost_value", async (req, res) => {
     const itemToUpdate = req.params.item_number;
     const newCost = req.params.cost_value;
     const items = [];
-    var stock;
     let book_name = "";
+    let found = false;
+    let oldCost = 0;
     await fs
       .createReadStream("./catalog.csv")
       .pipe(csv())
@@ -161,21 +188,28 @@ app.get("/update/cost/:item_number/:cost_value", async (req, res) => {
         items.forEach((row) => {
           if (row.item_number === itemToUpdate) {
             book_name = row.title;
-            stock = parseInt(row.items_in_stock, 10);
+            oldCost = row.cost;
             row.cost = newCost;
+            found = true;
           }
         });
-        const writeStream = fs.createWriteStream("output.csv");
-        fastcsv
-          .writeToStream(writeStream, items, { headers: true })
-          .on("finish", () => {
-            console.log("Data has been updated and written to output.csv");
-            responseMessage.message = "Cost updated successfully";
-            responseMessage.book_name = book_name;
+        if (found === true) {
+          const writeStream = fs.createWriteStream("output.csv");
+          fastcsv
+            .writeToStream(writeStream, items, { headers: true })
+            .on("finish", () => {
+              responseMessage.message = "Cost updated successfully";
+              responseMessage.book_name = book_name;
 
-            res.json(responseMessage);
-            fs.renameSync("output.csv", "./catalog.csv");
-          });
+              res.json(
+                `The cost of (${book_name}) book has been updated successfully, old cost: ${oldCost} , new cost : ${newCost}`
+              );
+
+              fs.renameSync("output.csv", "./catalog.csv");
+            });
+        } else {
+          res.send("Item not found in the catalog");
+        }
       });
   } catch (error) {
     res.status(500).send("Error reading the file");

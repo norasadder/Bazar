@@ -7,8 +7,8 @@ const fastcsv = require("fast-csv");
 const app = express();
 const port = 3000;
 
-// make an order 
-// will check the item first then the stock 
+// make an order
+// will check the item first then the stock
 // if no error the stock will be decrement and the purchase will be stored
 app.get("/purchase/:item_number", async (req, res) => {
   try {
@@ -26,22 +26,31 @@ app.get("/purchase/:item_number", async (req, res) => {
         // Item found in the catalog, proceed with the purchase logic
         // Update the stock by making another request
         const updateResponse = await axios.get(
-          `${catalogServerUrl}/update/${itemToPurchase}`
+          `${catalogServerUrl}/update/decrement/${itemToPurchase}`
         );
 
         if (updateResponse.status === 200) {
           // Successfully updated stock in the catalog server
-          console.log(updateResponse.data);
           if (updateResponse.data.message === "No stock. Sold out.") {
             // If the catalog server responds with "No stock. Sold out.", handle the out-of-stock case
-            res.json("Item is out of stock");
+            res.json(
+              `The book (${updateResponse.data.book_name}) is out of stock`
+            );
           } else if (
             updateResponse.data.message === "Stock updated successfully"
           ) {
             // The catalog server has successfully updated the stock, proceed with the purchase logic
             // Respond with a success message
             await addOrder(itemToPurchase);
-            res.json(`bought book ${updateResponse.data.book_name}`);
+            res.json(
+              `The book (${updateResponse.data.book_name}) has been bought successfully`
+            );
+          } else if (
+            updateResponse.data.message === "Item not found in the catalog"
+          ) {
+            res.json(
+              `The book with number (${itemToPurchase}) is not found in the catalog`
+            );
           } else {
             // Handle other responses if needed
             res
@@ -56,7 +65,9 @@ app.get("/purchase/:item_number", async (req, res) => {
         }
       } else {
         // Handle the case when the catalog server responds with "No results found."
-        res.status(404).json({ error: "Item not found in the catalog" });
+        res.json(
+          `The book with number (${itemToPurchase}) is not found in the catalog`
+        );
       }
     } else {
       // Handle other HTTP status codes if needed
