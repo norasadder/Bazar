@@ -7,6 +7,7 @@ const { resolve } = require("path");
 const app = express();
 const port = 3000;
 
+// search by topic
 app.get("/query/subject/:topic", async (req, res) => {
   try {
     const topicToSearch = req.params.topic;
@@ -31,6 +32,7 @@ app.get("/query/subject/:topic", async (req, res) => {
   }
 });
 
+// search by item number
 app.get("/query/itemNumber/:itemNumber", async (req, res) => {
   try {
     const itemToSearch = req.params.itemNumber;
@@ -54,6 +56,7 @@ app.get("/query/itemNumber/:itemNumber", async (req, res) => {
   }
 });
 
+// decrement the stock given the item number
 app.get("/update/:item_number", async (req, res) => {
   try {
     const itemToUpdate = req.params.item_number;
@@ -64,7 +67,6 @@ app.get("/update/:item_number", async (req, res) => {
       .createReadStream("./catalog.csv")
       .pipe(csv())
       .on("data", (row) => {
-        // console.log(row);
         items.push(row);
       })
       .on("end", () => {
@@ -95,6 +97,85 @@ app.get("/update/:item_number", async (req, res) => {
               fs.renameSync("output.csv", "./catalog.csv");
             });
         }
+      });
+  } catch (error) {
+    res.status(500).send("Error reading the file");
+  }
+});
+
+// increment the stck given the item number
+app.get("/update/increment/:item_number", async (req, res) => {
+  try {
+    const itemToUpdate = req.params.item_number;
+    const items = [];
+    var stock;
+    let book_name = "";
+    await fs
+      .createReadStream("./catalog.csv")
+      .pipe(csv())
+      .on("data", (row) => {
+        items.push(row);
+      })
+      .on("end", () => {
+        let responseMessage = { message: "", book_name: "" };
+        items.forEach((row) => {
+          if (row.item_number === itemToUpdate) {
+            book_name = row.title;
+            stock = parseInt(row.items_in_stock, 10);
+            row.items_in_stock = stock + 1;
+          }
+        });
+        const writeStream = fs.createWriteStream("output.csv");
+        fastcsv
+          .writeToStream(writeStream, items, { headers: true })
+          .on("finish", () => {
+            console.log("Data has been updated and written to output.csv");
+            responseMessage.message = "Stock updated successfully";
+            responseMessage.book_name = book_name;
+
+            res.json(responseMessage);
+            fs.renameSync("output.csv", "./catalog.csv");
+          });
+      });
+  } catch (error) {
+    res.status(500).send("Error reading the file");
+  }
+});
+
+// update the cost
+app.get("/update/cost/:item_number/:cost_value", async (req, res) => {
+  try {
+    const itemToUpdate = req.params.item_number;
+    const newCost = req.params.cost_value;
+    const items = [];
+    var stock;
+    let book_name = "";
+    await fs
+      .createReadStream("./catalog.csv")
+      .pipe(csv())
+      .on("data", (row) => {
+        items.push(row);
+      })
+      .on("end", () => {
+        let responseMessage = { message: "", book_name: "" };
+        items.forEach((row) => {
+          if (row.item_number === itemToUpdate) {
+            book_name = row.title;
+            stock = parseInt(row.items_in_stock, 10);
+            row.cost = newCost;
+          }
+        });
+        const writeStream = fs.createWriteStream("output.csv");
+        fastcsv
+          .writeToStream(writeStream, items, { headers: true })
+          .on("finish", () => {
+            console.log("Data has been updated and written to output.csv");
+            responseMessage.message = "Cost updated successfully";
+            responseMessage.book_name = book_name;
+
+            res.json(responseMessage);
+            fs.renameSync("output.csv", "./catalog.csv");
+          });
       });
   } catch (error) {
     res.status(500).send("Error reading the file");

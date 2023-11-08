@@ -1,0 +1,37 @@
+version: '3'
+services:
+  catalog:
+    image: bazar
+    command: sh -c "node app.js && sleep infinity"
+    volumes:
+      - ./catalog:/home
+    ports:
+      - "4000:3000"
+    networks:
+      - net
+    container_name: catalog
+
+  order:
+    image: bazar
+    command: sh -c "node app.js && sleep infinity"
+    volumes:
+      - ./order:/home
+    ports:
+      - "4001:3000"
+    networks:
+      - net
+    container_name: order
+
+  front:
+    image: bazar
+    command: sh -c "node app.js && sleep infinity"
+    volumes:
+      - ./front:/home
+    ports:
+      - "4002:3000"
+    networks:
+      - net
+    container_name: front
+
+networks:
+  net:

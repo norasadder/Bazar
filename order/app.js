@@ -7,6 +7,9 @@ const fastcsv = require("fast-csv");
 const app = express();
 const port = 3000;
 
+// make an order 
+// will check the item first then the stock 
+// if no error the stock will be decrement and the purchase will be stored
 app.get("/purchase/:item_number", async (req, res) => {
   try {
     const itemToPurchase = req.params.item_number;

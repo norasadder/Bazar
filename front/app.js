@@ -3,6 +3,7 @@ const axios = require("axios");
 const app = express();
 const port = 3000;
 
+// order a book by calling the order server api
 app.get("/purchase/:item_number", async (req, res) => {
   try {
     const itemToPurchase = req.params.item_number;
@@ -22,6 +23,7 @@ app.get("/purchase/:item_number", async (req, res) => {
   }
 });
 
+// searching for an item by calling the catalog server api based on the item number
 app.get("/info/:item_number", async (req, res) => {
   try {
     const itemToQuery = req.params.item_number;
@@ -43,6 +45,7 @@ app.get("/info/:item_number", async (req, res) => {
   }
 });
 
+// searching for an item by calling the catalog server api based on the topic
 app.get("/search/:topic", async (req, res) => {
   try {
     const topicToSearch = req.params.topic;
