@@ -23,7 +23,7 @@ app.get("/query/subject/:topic", async (req, res) => {
         if (results.length > 0) {
           res.json(results);
         } else {
-          res.json("No results found.");
+          res.json("Item not found in the catalog");
         }
       });
   } catch (error) {
@@ -48,7 +48,7 @@ app.get("/query/itemNumber/:itemNumber", async (req, res) => {
         if (results.length > 0) {
           res.json(results);
         } else {
-          res.json("No results found.");
+          res.json("Item not found in the catalog");
         }
       });
   } catch (error) {
