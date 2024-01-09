@@ -12,6 +12,7 @@ const port = 3000;
 // if no error the stock will be decrement and the purchase will be stored
 app.get("/purchase/:item_number", async (req, res) => {
   try {
+    console.log("purchase by item number")
     const itemToPurchase = req.params.item_number;
 
     const catalogServerUrl = "http://catalog:3000";

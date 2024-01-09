@@ -10,6 +10,7 @@ const port = 3000;
 // search by topic
 app.get("/query/subject/:topic", async (req, res) => {
   try {
+    console.log("search by topic")
     const topicToSearch = req.params.topic;
     const results = [];
     fs.createReadStream("./catalog.csv")

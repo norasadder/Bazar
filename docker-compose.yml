@@ -1,37 +1,55 @@
-version: '3'
+version: '3.8'
+
 services:
+
   catalog:
     image: bazar
     command: sh -c "node app.js && sleep infinity"
     volumes:
       - ./catalog:/home
-    ports:
-      - "4000:3000"
+      - catalog-data:/home/catalog
     networks:
       - net
-    container_name: catalog
+    deploy:
+      replicas: 2
+      endpoint_mode: dnsrr
+      placement:
+        constraints:
+          - node.labels.type == worker
 
   order:
     image: bazar
     command: sh -c "node app.js && sleep infinity"
     volumes:
       - ./order:/home
-    ports:
-      - "4001:3000"
     networks:
       - net
-    container_name: order
+    deploy:
+      replicas: 2
+      endpoint_mode: dnsrr
+      placement:
+        constraints:
+          - node.labels.type == worker
+
 
   front:
     image: bazar
     command: sh -c "node app.js && sleep infinity"
     volumes:
       - ./front:/home
-    ports:
-      - "4002:3000"
     networks:
       - net
-    container_name: front
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      placement:
+        constraints:
+          - node.labels.type == worker
+    ports:
+      - "4004:3000"
 
 networks:
   net:
+
+volumes:
+  catalog-data:
