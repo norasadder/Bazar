@@ -22,6 +22,7 @@ services:
     command: sh -c "node app.js && sleep infinity"
     volumes:
       - ./order:/home
+      - order-data:/home/order
     networks:
       - net
     deploy:
@@ -53,3 +54,4 @@ networks:
 
 volumes:
   catalog-data:
+  order-data:
