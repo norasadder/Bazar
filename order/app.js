@@ -12,7 +12,7 @@ const port = 3000;
 // if no error the stock will be decrement and the purchase will be stored
 app.get("/purchase/:item_number", async (req, res) => {
   try {
-    console.log("purchase by item number")
+    console.log("purchase item in order server");
     const itemToPurchase = req.params.item_number;
 
     const catalogServerUrl = "http://catalog:3000";
@@ -95,16 +95,12 @@ async function addOrder(item_number) {
         order_number += 1;
       })
       .on("end", () => {
-        console.log(items);
         items.push({ order_number: order_number, item_number: item_number });
-        console.log(items);
         const writeStream = fs.createWriteStream("output.csv");
 
         fastcsv
           .writeToStream(writeStream, items, { headers: true })
-          .on("finish", () => {
-            console.log("Data has been updated and written to output.csv");
-          });
+          .on("finish", () => {});
 
         fs.renameSync("output.csv", "./order.csv");
       });

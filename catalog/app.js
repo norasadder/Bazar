@@ -10,7 +10,7 @@ const port = 3000;
 // search by topic
 app.get("/query/subject/:topic", async (req, res) => {
   try {
-    console.log("search by topic")
+    // console.log("search by topic in catalog server");
     const topicToSearch = req.params.topic;
     const results = [];
     fs.createReadStream("./catalog.csv")
@@ -36,6 +36,7 @@ app.get("/query/subject/:topic", async (req, res) => {
 // search by item number
 app.get("/query/itemNumber/:itemNumber", async (req, res) => {
   try {
+    // console.log("query by item number in catalog server");
     const itemToSearch = req.params.itemNumber;
     const results = [];
     fs.createReadStream("./catalog.csv")
@@ -96,7 +97,6 @@ app.get("/update/decrement/:item_number", async (req, res) => {
           fastcsv
             .writeToStream(writeStream, items, { headers: true })
             .on("finish", () => {
-              console.log("Data has been updated and written to output.csv");
               responseMessage.message = "Stock updated successfully";
 
               // res.json(
@@ -149,7 +149,6 @@ app.get("/update/increment/:item_number/:quantity", async (req, res) => {
           fastcsv
             .writeToStream(writeStream, items, { headers: true })
             .on("finish", () => {
-              console.log("Data has been updated and written to output.csv");
               responseMessage.message = "Stock updated successfully";
               responseMessage.book_name = book_name;
 
